@@ -27,7 +27,7 @@ class ScheduledTaskCog(commands.Cog):
 
         # Constants
         self.STOCK_KEYWORDS = ["stock", "market", "shares", "earnings", "IPO", "investment", "trading", "ai", "technology"]
-        self.TRUSTED_SOURCES = ["cnbc", "bloomberg", "reuters", "wsj", "financial times", "marketwatch"]
+        self.TRUSTED_SOURCES = ["cnbc", "bloomberg", "reuters", "wsj", "financial times"]
 
         self.bot = bot
         self.category_name = "Stock Channels"
@@ -151,9 +151,9 @@ class ScheduledTaskCog(commands.Cog):
                 key=lambda article: (self.get_source_priority(article), -article["datetime"])
             )
 
-            # Step 5: Retrieve only first 5 news
-            logging.info("Finished filtering, returning top 5 news")
-            top_articles = ranked_news[:5]
+            # Step 5: Retrieve only first 10 news
+            logging.info("Finished filtering, returning top 10 news")
+            top_articles = ranked_news[:10]
 
             # Step 6: Create an embed
             embed = self.create_news_embed(top_articles)
@@ -169,7 +169,7 @@ class ScheduledTaskCog(commands.Cog):
             return embed
 
 
-    @app_commands.command(name="get-market-news", description="Retrieves top stock market news within the last 24 hours")
+    @app_commands.command(name="get-market-news", description="Retrieves 10 stock market news articles within the last 24 hours")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def get_market_news(self, interaction: discord.Interaction):
         logging.info("get-market-news command is being executed")
