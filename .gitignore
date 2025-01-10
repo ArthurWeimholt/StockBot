@@ -1,0 +1,8 @@
+# Ignore virtual environments and any .env file
+venv/
+*.env
+
+# Created directories
+graphs/
+matplotlib_graphs/
+logs/
