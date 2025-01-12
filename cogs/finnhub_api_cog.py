@@ -17,6 +17,52 @@ load_dotenv(env_path)
 # Define MY_GUILD_ID for testing, production will be None
 MY_GUILD_ID = os.getenv("MY_GUILD_ID", None)
 
+
+def create_quote_embed(ticker, data):
+    # Determine the emoji for percent change
+    percent_change = data['dp']
+    if percent_change > 0:
+        percent_change_emoji = f"⬆️"
+    elif percent_change < 0:
+        percent_change_emoji = f"⬇️"
+    else:
+        percent_change_emoji = f"➖"
+
+    # Create the embed
+    embed = discord.Embed(
+        title=f"📊 Stock Quote for {ticker}",
+        description=f"Quote last updated at {datetime.datetime.fromtimestamp(data['t']).strftime('%Y-%m-%d at %-I:%M %p')}:",
+        color=discord.Color.green() if percent_change > 0 else discord.Color.red()
+    )
+    
+    # Add fields with styled values
+    embed.add_field(
+        name="Price Info", 
+        value=(
+            f"💰 **Current Price: ${data['c']:.2f}**\n"
+            f"☀️ **Open: ${data['o']:.2f}**\n"
+            f"🌚 **Previous Close: ${data['pc']:.2f}**\n"
+            f"{percent_change_emoji} **Percent Change: {percent_change:.2f}**"
+        ),
+        inline=False
+    )   
+
+    embed.add_field(
+        name="Day's Ranges",
+        value=(
+            f"📈 **Day's High: ${data['h']:.2f}**\n"
+            f"📉 **Day's Low: ${data['l']:.2f}**"
+        ),
+        inline=False
+    )
+    
+    # Add footer and timestamp
+    embed.timestamp = datetime.datetime.now()
+    embed.set_footer(text="Powered by Finnhub API")
+
+    return embed
+
+
 class FinnhubCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -28,12 +74,8 @@ class FinnhubCog(commands.Cog):
             raise ValueError("Finnhub API key is not set. Please configure the API key.")
         self.client = finnhub.Client(api_key=api_key)
 
-    @app_commands.command(name="test-finnhub-cog", description="Tests the finnhub cog")
-    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def test_finnhub_cog(self, interaction: discord.Interaction):
-        await interaction.response.send_message("Finnhub Cog awaiting commands.")
 
-    @app_commands.command(name="get-quote", description="Retrieves the latest quote of the specified ticker symbole using Finnhub")
+    @app_commands.command(name="get-quote", description="Returns the latest quote of the specified ticker symbol in green if postive and red if negative")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def get_quote_finnhub(self, interaction: discord.Interaction, ticker: str):
         ticker = ticker.upper()
@@ -52,15 +94,9 @@ class FinnhubCog(commands.Cog):
                 if any(ticker == result["symbol"] for result in data["result"]):
                     data = self.client.quote(ticker)
 
-                    # Package the quote data
-                    response = f'Current price: {data["c"]}\n'
-                    response += f'Previous Close: {data["pc"]}\n'
-                    response += f'Open: {data["o"]}\n'
-                    response += f'High: {data["h"]}\n'
-                    response += f'Low: {data["l"]}\n'
-                    response += f'Percent Change: {data["dp"]}\n'
-                    response += f'Timestamp: {datetime.datetime.fromtimestamp(data["t"])}\n'
-                    await interaction.response.send_message(response)
+                    # Package the quote data in an embed and return 
+                    embed = create_quote_embed(ticker, data)
+                    await interaction.response.send_message(embed=embed)
 
                 # Found indirect matches
                 else:
@@ -80,7 +116,7 @@ class FinnhubCog(commands.Cog):
             await interaction.response.send_message("An error occurred while fetching the quote. Please try again later.")
 
 
-    @app_commands.command(name="get-quote-rating", description="Returns a chart of recommendation trends")
+    @app_commands.command(name="get-quote-rating", description="Returns bar and line chart of recommendation trends using Finnhub")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def get_quote_rating(self, interaction: discord.Interaction, ticker: str):
         ticker = ticker.upper()
