@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from discord import Embed
 
 
-def embed_news_template(articles: list, embed: Embed):
+def embed_news_template(articles: list, embed: Embed) -> Embed: 
 
     # Package each article
     for article in articles:
