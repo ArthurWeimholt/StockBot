@@ -5,6 +5,7 @@ import datetime
 import finnhub
 import logging
 import plot_util
+import formatter
 from api_keys import API_keys
 from discord import app_commands
 from discord.ext import commands
@@ -159,6 +160,53 @@ class FinnhubCog(commands.Cog):
         except Exception as e:
             logging.error(f"Error fetching recommendation trends for {ticker}: {e}")
             await interaction.response.send_message("An error occurred while fetching the recommendation trends. Please try again later.")
+
+
+    @app_commands.command(name="get-company-news", description="Returns up to 10 news articles within the past week based on a specific ticker using Finnhub")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def get_company_news(self, interaction: discord.Interaction, ticker: str):
+        ticker = ticker.upper()
+
+        # Prevents injections or invalid requests
+        if not ticker.isalnum():
+            await interaction.response.send_message("Invalid ticker symbol. Please use a valid alphanumeric ticker.")
+            return 
+
+        # Define the date range for the past week
+        today = datetime.datetime.utcnow()
+        last_week = today - datetime.timedelta(days=7)
+        
+        # Convert the dates to the format required by the API (YYYY-MM-DD)
+        start_date = last_week.strftime("%Y-%m-%d")
+        end_date = today.strftime("%Y-%m-%d")
+        
+        try:
+            news_data = self.client.company_news(ticker, _from=start_date, to=end_date)
+            
+            # Limit the results to a maximum of 10 articles
+            top_articles = news_data[:10]
+
+            if not top_articles:
+                embed = discord.Embed(
+                    title=f"No News for {ticker}",
+                    description="There are no recent articles available.",
+                    color=discord.Color.red()
+                )
+            else:
+                embed = discord.Embed(
+                    title=f"Latest news for {ticker}",
+                    description=f"Here are the top {len(top_articles)} news articles from the past week",
+                    color=discord.Color.green()
+                )
+                embed = formatter.embed_news_template(top_articles, embed)
+            
+            await interaction.response.send_message(embed=embed)
+
+        except Exception as e:
+            logging.error(f"Error fetching company news for {ticker}: {e}")
+            await interaction.response.send_message("An error occurred while fetching company news. Please try again later.")
+
+
 
 # Setup is required for entry point
 async def setup(bot):

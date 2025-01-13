@@ -2,6 +2,7 @@ import logging
 import finnhub
 import discord
 import os
+import formatter
 from discord import app_commands
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
@@ -101,21 +102,9 @@ class ScheduledTaskCog(commands.Cog):
             color=discord.Color.green()
         )
 
-        for article in articles:
-            headline = article["headline"]
-            url = article["url"]
-            source = article.get("source", "Unknown")
-            time = datetime.fromtimestamp(article["datetime"]).strftime("%Y-%m-%d %H:%M:%S")
-            embed.add_field(
-                name=f"{headline} ({source})",
-                value=f"[Read more here]({url})\nPublished: {time}",
-                inline=False
-            )
-
-        embed.timestamp = datetime.now()
-        embed.set_footer(text="Powered by Finnhub API")
+        embed = formatter.embed_news_template(articles, embed)
         return embed
-
+        
 
     async def fetch_and_format_market_news(self):
         """Fetch market news and format it as a response."""
@@ -169,7 +158,7 @@ class ScheduledTaskCog(commands.Cog):
             return embed
 
 
-    @app_commands.command(name="get-market-news", description="Retrieves 10 stock market news articles within the last 24 hours")
+    @app_commands.command(name="get-market-news", description="Returns 10 news articles on the stock market within the last 24 hours")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def get_market_news(self, interaction: discord.Interaction):
         logging.info("get-market-news command is being executed")
