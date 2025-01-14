@@ -10,7 +10,7 @@ class AlphaVantageCog(commands.Cog):
         self.bot = bot
         self.client = finnhub.Client(api_key="YOUR API KEY")
 
-    @commands.command(name="test_alpha_vantage", description="Tests the Alpha Vantage cog")
+    @commands.command(name="test-alpha-vantage", description="Tests the Alpha Vantage cog")
     async def test_alpha_vantage(self, ctx):
         await ctx.send("Alpha Vantage Cog awaiting commands!")
 
