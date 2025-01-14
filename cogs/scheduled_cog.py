@@ -102,7 +102,7 @@ class ScheduledTaskCog(commands.Cog):
             color=discord.Color.green()
         )
 
-        embed = formatter.embed_news_template(articles, embed)
+        formatter.embed_news_template(articles, embed)
         return embed
         
 
@@ -110,7 +110,7 @@ class ScheduledTaskCog(commands.Cog):
         """Fetch market news and format it as a response."""
         try:
             # Step 1: Fetch all market news
-            logging.info("Retrieving market news")
+            logging.debug("Retrieving market news")
             news_data = self.finnhub_client.general_news('general')
             if len(news_data) == 0:
                 embed = discord.Embed(
@@ -121,7 +121,7 @@ class ScheduledTaskCog(commands.Cog):
                 return embed
 
             # Step 2: Filter by time, last day 
-            logging.info("Filtering top news articles by the last 24 hours")
+            logging.debug("Filtering top news articles by the last 24 hours")
             current_time = datetime.utcnow()
             cutoff_time = current_time - timedelta(days=1)
             recent_news = [
@@ -130,18 +130,18 @@ class ScheduledTaskCog(commands.Cog):
             ]
 
             # Step 3: Search top news by keywords
-            logging.info("Filtering top news articles by keywords")
+            logging.debug("Filtering top news articles by keywords")
             relevant_news = [article for article in recent_news if self.is_stock_relevant(article)]
 
             # Step 4: Rank by source priority and recency
-            logging.info("Filtering top news articles by priority and recency")
+            logging.debug("Filtering top news articles by priority and recency")
             ranked_news = sorted(
                 relevant_news,
                 key=lambda article: (self.get_source_priority(article), -article["datetime"])
             )
 
             # Step 5: Retrieve only first 10 news
-            logging.info("Finished filtering, returning top 10 news")
+            logging.debug("Finished filtering, returning top 10 news")
             top_articles = ranked_news[:10]
 
             # Step 6: Create an embed
@@ -161,7 +161,7 @@ class ScheduledTaskCog(commands.Cog):
     @app_commands.command(name="get-market-news", description="Returns 10 news articles on the stock market within the last 24 hours")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def get_market_news(self, interaction: discord.Interaction):
-        logging.info("get-market-news command is being executed")
+        logging.debug("get-market-news command is being executed")
         embed = await self.fetch_and_format_market_news()
         await interaction.response.send_message(embed=embed)
             

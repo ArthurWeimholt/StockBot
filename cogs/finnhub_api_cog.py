@@ -19,51 +19,6 @@ load_dotenv(env_path)
 MY_GUILD_ID = os.getenv("MY_GUILD_ID", None)
 
 
-def create_quote_embed(ticker, data):
-    # Determine the emoji for percent change
-    percent_change = data['dp']
-    if percent_change > 0:
-        percent_change_emoji = f"⬆️"
-    elif percent_change < 0:
-        percent_change_emoji = f"⬇️"
-    else:
-        percent_change_emoji = f"➖"
-
-    # Create the embed
-    embed = discord.Embed(
-        title=f"📊 Stock Quote for {ticker}",
-        description=f"Quote last updated at {datetime.datetime.fromtimestamp(data['t']).strftime('%Y-%m-%d at %-I:%M %p')}:",
-        color=discord.Color.green() if percent_change > 0 else discord.Color.red()
-    )
-    
-    # Add fields with styled values
-    embed.add_field(
-        name="Price Info", 
-        value=(
-            f"💰 **Current Price: ${data['c']:.2f}**\n"
-            f"☀️ **Open: ${data['o']:.2f}**\n"
-            f"🌚 **Previous Close: ${data['pc']:.2f}**\n"
-            f"{percent_change_emoji} **Percent Change: {percent_change:.2f}**"
-        ),
-        inline=False
-    )   
-
-    embed.add_field(
-        name="Day's Ranges",
-        value=(
-            f"📈 **Day's High: ${data['h']:.2f}**\n"
-            f"📉 **Day's Low: ${data['l']:.2f}**"
-        ),
-        inline=False
-    )
-    
-    # Add footer and timestamp
-    embed.timestamp = datetime.datetime.now()
-    embed.set_footer(text="Powered by Finnhub API")
-
-    return embed
-
-
 class FinnhubCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -96,7 +51,7 @@ class FinnhubCog(commands.Cog):
                     data = self.client.quote(ticker)
 
                     # Package the quote data in an embed and return 
-                    embed = create_quote_embed(ticker, data)
+                    embed = formatter.create_quote_embed(ticker, data)
                     await interaction.response.send_message(embed=embed)
 
                 # Found indirect matches
@@ -198,7 +153,7 @@ class FinnhubCog(commands.Cog):
                     description=f"Here are the top {len(top_articles)} news articles from the past week",
                     color=discord.Color.green()
                 )
-                embed = formatter.embed_news_template(top_articles, embed)
+                formatter.embed_news_template(top_articles, embed)
             
             await interaction.response.send_message(embed=embed)
 
