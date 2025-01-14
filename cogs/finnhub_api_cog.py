@@ -28,12 +28,12 @@ class FinnhubCog(commands.Cog):
         if not api_key:
             logging.error("Finnhub API key is missing or invalid.")
             raise ValueError("Finnhub API key is not set. Please configure the API key.")
-        self.client = finnhub.Client(api_key=api_key)
+        self.finnhub_client = finnhub.Client(api_key=api_key)
 
 
     @app_commands.command(name="get-quote", description="Returns the latest quote of the specified ticker symbol in green if postive and red if negative")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def get_quote_finnhub(self, interaction: discord.Interaction, ticker: str):
+    async def get_quote(self, interaction: discord.Interaction, ticker: str) -> None:
         ticker = ticker.upper()
 
         # Prevents injection or invalid requests
@@ -43,12 +43,12 @@ class FinnhubCog(commands.Cog):
 
         try:
             # Lookup ticker symbol
-            data = self.client.symbol_lookup(ticker)
+            data = self.finnhub_client.symbol_lookup(ticker)
             if "count" in data and data["count"] > 0:
 
                 # Check for direct match
                 if any(ticker == result["symbol"] for result in data["result"]):
-                    data = self.client.quote(ticker)
+                    data = self.finnhub_client.quote(ticker)
 
                     # Package the quote data in an embed and return 
                     embed = formatter.create_quote_embed(ticker, data)
@@ -74,7 +74,7 @@ class FinnhubCog(commands.Cog):
 
     @app_commands.command(name="get-quote-rating", description="Returns bar and line chart of recommendation trends using Finnhub")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def get_quote_rating(self, interaction: discord.Interaction, ticker: str):
+    async def get_quote_rating(self, interaction: discord.Interaction, ticker: str) -> None:
         ticker = ticker.upper()
 
         # Prevents injections or invalid requests
@@ -84,7 +84,7 @@ class FinnhubCog(commands.Cog):
 
         try:
             # Lookup ticker recommendation trends
-            data = self.client.recommendation_trends(ticker)
+            data = self.finnhub_client.recommendation_trends(ticker)
             if len(data) != 0:
                 sb = [item["strongBuy"] for item in data]
                 b = [item["buy"] for item in data]
@@ -119,7 +119,7 @@ class FinnhubCog(commands.Cog):
 
     @app_commands.command(name="get-company-news", description="Returns up to 10 news articles within the past week based on a specific ticker using Finnhub")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
-    async def get_company_news(self, interaction: discord.Interaction, ticker: str):
+    async def get_company_news(self, interaction: discord.Interaction, ticker: str) -> None:
         ticker = ticker.upper()
 
         # Prevents injections or invalid requests
@@ -136,7 +136,7 @@ class FinnhubCog(commands.Cog):
         end_date = today.strftime("%Y-%m-%d")
         
         try:
-            news_data = self.client.company_news(ticker, _from=start_date, to=end_date)
+            news_data = self.finnhub_client.company_news(ticker, _from=start_date, to=end_date)
             
             # Limit the results to a maximum of 10 articles
             top_articles = news_data[:10]
@@ -161,6 +161,17 @@ class FinnhubCog(commands.Cog):
             logging.error(f"Error fetching company news for {ticker}: {e}")
             await interaction.response.send_message("An error occurred while fetching company news. Please try again later.")
 
+
+    @app_commands.command(name="get-capm", description="Returns the expected return of a stock using the Capital Asset Pricing Model (CAPM)")
+    @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
+    async def get_company_news(self, interaction: discord.Interaction, ticker: str) -> None:
+        ticker = ticker.upper()
+
+        # Prevents injections or invalid requests
+        if not ticker.isalnum():
+            await interaction.response.send_message("Invalid ticker symbol. Please use a valid alphanumeric ticker.")
+            return 
+        
 
 
 # Setup is required for entry point
