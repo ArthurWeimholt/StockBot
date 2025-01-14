@@ -5,11 +5,14 @@ from discord import Embed, Color
 
 
 def create_embed_footer(embed: Embed) -> None:
+    """Creates a footer with a timestamp for Embedded responses"""
     embed.timestamp = datetime.now()
     embed.set_footer(text="Powered by Finnhub API")
 
 
 def create_quote_embed(ticker: str, data: dict) -> Embed:
+    """Returns an embedded response for a quote lookup based on a Finnhub API call"""
+    
     # Determine the emoji for percent change
     percent_change = data['dp']
     if percent_change > 0:
@@ -52,7 +55,29 @@ def create_quote_embed(ticker: str, data: dict) -> Embed:
     return embed
 
 
+def create_capm_embed(ticker: str, beta: float, risk_free_rate: float, market_return: float, capm: float) -> Embed:
+    """Returns an embedded response for the Capital Asset Pricing Model"""
+
+    # Create the embed
+    embed = Embed(
+        title=f"Capital Asset Pricing Model (CAPM) for {ticker}",
+        description=f"Uses 10 year U.S. Treasury yield for the risk-free rate\n"
+                    f"Uses the expected return of the S&P 500 index\n",
+        color=Color.blue()
+    )
+
+    # Add fields
+    embed.add_field(name="Risk-Free Rate", value=f"{risk_free_rate:.2f}%", inline=False)
+    embed.add_field(name="Market Return", value=f"{market_return:.2f}%", inline=False)
+    embed.add_field(name="Beta", value=f"{beta:.2f}", inline=False)
+    embed.add_field(name="CAPM Expected Return", value=f"{capm:.2f}%", inline=False)
+
+    create_embed_footer(embed)
+    return embed
+
+
 def embed_news_template(articles: list, embed: Embed) -> None: 
+    """Adds fields for each news article in an embedded response"""
 
     # Package each article
     for article in articles:

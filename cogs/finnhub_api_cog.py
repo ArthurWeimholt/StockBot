@@ -162,7 +162,7 @@ class FinnhubCog(commands.Cog):
             await interaction.response.send_message("An error occurred while fetching company news. Please try again later.")
 
 
-    @app_commands.command(name="get-capm", description="Returns the expected return of a stock using the Capital Asset Pricing Model (CAPM)")
+    @app_commands.command(name="get-capm", description="Generates the expected return of a stock using the Capital Asset Pricing Model (CAPM)")
     @app_commands.guilds(discord.Object(id=MY_GUILD_ID))
     async def get_company_news(self, interaction: discord.Interaction, ticker: str) -> None:
         ticker = ticker.upper()
@@ -172,6 +172,28 @@ class FinnhubCog(commands.Cog):
             await interaction.response.send_message("Invalid ticker symbol. Please use a valid alphanumeric ticker.")
             return 
         
+        try:
+            financials = self.finnhub_client.company_basic_financials(ticker, "all")
+
+            # Extract the beta value
+            beta = financials.get("metric", {}).get("beta")
+            if beta is None:
+                await interaction.response.send_message(f"Beta value not available for {ticker}.")
+            
+            # Calculate the market risk premium
+            risk_free_rate = 4.77
+            market_return = 8.00
+            market_risk_premium = market_return - risk_free_rate
+            
+            # Apply the CAPM formula 
+            capm_return = risk_free_rate + beta * market_risk_premium
+
+            embed = formatter.create_capm_embed(ticker, beta, risk_free_rate, market_return, capm_return)
+            await interaction.response.send_message(embed=embed)
+        
+        except Exception as e:
+            logging.error(f"Error fetching Capital Asset Pricing Model for {ticker}: {e}")
+            await interaction.response.send_message("An error occurred while fetching Capital Asset Pricing Model. Please try again later.")
 
 
 # Setup is required for entry point
