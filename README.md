@@ -24,12 +24,12 @@ If the percent change is negative or 0, then the embeded response will be Red. I
 
 [//]: <> (Insert picture here)
 
-**get-quote-recommendation** <br>
-This command uses a Finnhub API to return a bar and line graph of the recommendation trends. 
+**get-quote-rating** <br>
+This command uses a Finnhub API to return a bar and line graph of the analyst recommendation trends based on a ticker symbol
 
-For the bar graph, 
 
 **get-market-news** <br>
+Fetches, filters, ranks, and displays the top 10 stock-related news articles from the past 24 hours in an embedded message.
 
 **get-company-news** <br>
 
