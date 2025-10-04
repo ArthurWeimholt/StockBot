@@ -6,6 +6,8 @@ import logging
 from discord.ext import commands
 from dotenv import load_dotenv
 from api_keys import API_keys
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import threading
 
 class MyBot(commands.Bot):
     def __init__(self, intents):
@@ -62,6 +64,21 @@ class MyBot(commands.Bot):
 
 
 def main():
+
+    # Start a minimal HTTP server in a separate thread
+    PORT = int(os.environ.get("PORT", 8080))
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"Bot is running!")
+
+    def run_server():
+        server = HTTPServer(("", PORT), Handler)
+        server.serve_forever()
+
+    threading.Thread(target=run_server, daemon=True).start()
 
     # Load in Environment Variables
     load_dotenv()
