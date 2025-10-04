@@ -16,7 +16,7 @@ env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'
 load_dotenv(env_path)
 
 # Define MY_GUILD_ID for testing, production will be None
-MY_GUILD_ID = os.getenv("MY_GUILD_ID", None)
+MY_GUILD_ID = int(os.getenv("MY_GUILD_ID", None))
 
 
 class FinnhubCog(commands.Cog):
