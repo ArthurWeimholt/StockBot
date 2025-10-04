@@ -4,7 +4,7 @@ import os
 import discord
 import logging
 from discord.ext import commands
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from api_keys import API_keys
 
 class MyBot(commands.Bot):
@@ -63,7 +63,10 @@ class MyBot(commands.Bot):
 
 def main():
     # Load in Environment Variables
-    load_dotenv()
+    config = dotenv_values(".env")
+    for k, v in config.items():
+        if v:  # only set if not empty
+            os.environ.setdefault(k, v)
     API_keys.set_alpha_vantage_api_key(os.getenv('ALPHA_VANTAGE_API_KEY'))
     API_keys.set_finnhub_api_key(os.getenv('FINNHUB_API_KEY'))
 

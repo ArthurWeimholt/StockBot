@@ -9,11 +9,14 @@ import formatter
 from api_keys import API_keys
 from discord import app_commands
 from discord.ext import commands
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
 # Load the .env file from the parent directory
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env')
-load_dotenv(env_path)
+config = dotenv_values(env_path)
+for k, v in config.items():
+    if v:  # only set if not empty
+        os.environ.setdefault(k, v)
 
 # Define MY_GUILD_ID for testing, production will be None
 MY_GUILD_ID = int(os.getenv("MY_GUILD_ID", None))
