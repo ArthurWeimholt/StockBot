@@ -3,11 +3,11 @@
 import os
 import discord
 import logging
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from discord.ext import commands
 from dotenv import load_dotenv
 from api_keys import API_keys
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import threading
 
 class MyBot(commands.Bot):
     def __init__(self, intents):
