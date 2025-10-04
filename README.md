@@ -33,6 +33,10 @@ Fetches, filters, ranks, and displays the top 10 stock-related news articles fro
 
 **get-company-news** <br>
 
+## Scheduled Commands
+**get-market-news** <br>
+Fetches, filters, ranks, and displays the top 10 stock-related news articles from the past 24 hours in an embedded message every morning at 6 AM PST
+
 ---
 
 ## Developer Workflow
